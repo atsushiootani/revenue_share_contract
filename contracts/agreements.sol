@@ -23,7 +23,7 @@ contract Agreements{
     uint8 public memberCount;
 
     /// 参加待ちメンバー
-    mapping (address => bool) membersWaitingForJoin;
+    mapping (address => bool) public membersWaitingForJoin;
     
     /// 参加待ちメンバーへの投票者・投票数
     mapping (address => mapping (address => bool)) votesForMembersWaitingForJoin;
@@ -107,6 +107,10 @@ contract Agreements{
 
     /**************** function members ****************/
     
+    function three() external pure returns (uint){
+        return 3;
+    }
+
     /// 自分はメンバー？（動作確認用）
     function amIMember() public view returns(bool)
     {
@@ -220,7 +224,7 @@ contract Agreements{
     /**************** function revenue share ****************/
 
     /// 分配可能資金
-    function deposit() public view returns (uint){
+    function depositAmount() public view returns (uint){
         return address(this).balance;
     }
 
@@ -231,7 +235,7 @@ contract Agreements{
 
     /// 分配
     function _revenueShare() internal {
-        uint amount = deposit();
+        uint amount = depositAmount();
         if (amount <= 0){
             return;
         }
