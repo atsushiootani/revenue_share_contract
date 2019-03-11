@@ -111,6 +111,10 @@ contract Agreements{
         return 3;
     }
 
+    function whoami() external view returns(address){
+        return msg.sender;
+    }
+
     /// 自分はメンバー？（動作確認用）
     function amIMember() public view returns(bool)
     {
