@@ -24,7 +24,7 @@ contract Agreements{
 
     /// 参加待ちメンバー
     mapping (address => bool) public membersWaitingForJoin;
-    
+
     /// 参加待ちメンバーへの投票者・投票数
     mapping (address => mapping (address => bool)) votesForMembersWaitingForJoin;
     mapping (address => uint8) voteCountForMembersWaitingForJoin;
@@ -115,10 +115,25 @@ contract Agreements{
         return msg.sender;
     }
 
-    /// 自分はメンバー？（動作確認用）
+    // 全メンバーを返す
+    function allMembers() external view returns(address payable[] memory){
+        return members;
+    }
+
+    /// 自分はメンバー？
     function amIMember() public view returns(bool)
     {
         return contributesOfMember[msg.sender] != 0;
+    }
+
+    // 指定のアドレスがメンバーかどうか
+    function isMemberAddress(address _addr) public view returns(bool){
+        return contributesOfMember[_addr] != 0;
+    }
+
+    // 指定のアドレスが参加待ちかどうか
+    function isWaitingForJoinAddress(address _addr) public view returns(bool){
+        return membersWaitingForJoin[_addr] == true;
     }
 
     /// 自分の参加要求を出す
@@ -175,6 +190,27 @@ contract Agreements{
 
     /**************** function contributes ****************/
 
+    /// 投票可能な承認待ち貢献度を返す
+    function allWaitingContributes() external view
+        isMember(msg.sender)
+        returns(uint[] memory)
+    {
+        uint[] memory ids = new uint[](waitingContributes.length);
+        uint idCount = 0;
+        for (uint i = 0; i < waitingContributes.length; ++i){
+            Contribute storage c = waitingContributes[i];
+            if (!c.approved && c.member != msg.sender && !c.votedMembers[msg.sender]){
+                ids[idCount++] = c.id;
+            }
+        }
+
+        uint[] memory resultIds = new uint[](idCount);
+        for (uint i = 0; i < idCount; ++i){
+            resultIds[i] = ids[i];
+        }
+        return resultIds;
+    }
+
     /// 自分の貢献度を宣言する
     function requestToContribute(uint16 _value) external
         isMember(msg.sender)
@@ -213,7 +249,15 @@ contract Agreements{
         
         emit ContributeAdded(_contributeId);
     }
-    
+
+    /// 指定のアドレスの貢献度を返す
+    function contributeValue(address _addr) public view
+        isMember(_addr)
+        returns(uint)
+    {
+        return contributesOfMember[_addr] - 1;
+    }
+
     /// 総貢献度の算出
     function totalContributeValue() public view returns (uint)
     {
